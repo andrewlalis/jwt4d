@@ -1,0 +1,17 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/jwt4d
+jwt4d.so
+jwt4d.dylib
+jwt4d.dll
+jwt4d.a
+jwt4d.lib
+jwt4d-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
+*.a

@@ -1,0 +1,7 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"openssl": "3.3.4",
+		"secured": "3.0.0"
+	}
+}

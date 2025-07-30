@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"Andrew Lalis"
+	],
+	"copyright": "Copyright © 2025, Andrew Lalis",
+	"dependencies": {
+		"secured": "~>3.0.0"
+	},
+	"description": "JSON Web Token library to generate, parse, sign, and verify JWTs.",
+	"license": "CC0",
+	"name": "jwt4d",
+	"targetType": "library"
+}
