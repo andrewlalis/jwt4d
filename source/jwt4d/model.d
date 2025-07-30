@@ -1,9 +1,7 @@
 module jwt4d.model;
 
 import std.json;
-import std.typecons : Nullable;
 import std.base64;
-import secured;
 
 /**
  * Enum defining the names of registered JWT claims, as per RFC 7519.
@@ -97,6 +95,11 @@ struct JwtClaims {
         return this;
     }
 
+    long expiration() const {
+        if (JwtClaim.Expiration !in this.obj.object) return -1;
+        return this.obj.object[JwtClaim.Expiration].integer;
+    }
+
     ref notBefore(long notBefore) {
         if (notBefore < 0) {
             this.obj.object.remove(JwtClaim.NotBefore);
@@ -104,6 +107,11 @@ struct JwtClaims {
             this.obj.object[JwtClaim.NotBefore] = notBefore;
         }
         return this;
+    }
+
+    long notBefore() const {
+        if (JwtClaim.NotBefore !in this.obj.object) return -1;
+        return this.obj.object[JwtClaim.NotBefore].integer;
     }
 
     ref issuedAt(long issuedAt) {
@@ -127,67 +135,4 @@ struct JwtClaims {
     string toJson() const {
         return this.obj.toJSON();
     }
-}
-
-string writeJwt(in JwtClaims claims, string secret) {
-    JSONValue headerObj = JSONValue.emptyObject;
-    headerObj.object["typ"] = "JWT";
-    headerObj.object["alg"] = "HS256";
-    string headerBase64 = Base64URLNoPadding.encode(cast(ubyte[]) headerObj.toJSON());
-
-    string claimsBase64 = Base64URLNoPadding.encode(cast(ubyte[]) claims.toJson());
-
-    string prefix = headerBase64 ~ "." ~ claimsBase64;
-
-    ubyte[] signatureBytes = hmac_ex(
-        cast(ubyte[]) secret,
-        cast(ubyte[]) (prefix),
-        HashAlgorithm.SHA2_256
-    );
-    string signatureBase64 = Base64URLNoPadding.encode(signatureBytes);
-
-    return prefix ~ "." ~ signatureBase64;
-}
-
-unittest {
-    JwtClaims claims;
-    claims.issuer = "example.com";
-    claims.subject = "user123";
-    claims.expiration = 123;
-
-    string token = writeJwt(claims, "test");
-    import std.stdio;
-    writeln(token);
-}
-
-JwtClaims readJwt(string token, string secret) {
-    import std.algorithm : splitter;
-    import std.array : array;
-
-    auto parts = token.splitter('.').array;
-    JSONValue headerObj = parseJSON(cast(string) Base64URLNoPadding.decode(parts[0]));
-    // TODO: Verify header object and algorithm.
-    JSONValue claimsObj = parseJSON(cast(string) Base64URLNoPadding.decode(parts[1]));
-    // TODO: Verify claims object structure.
-    ubyte[] signatureBytes = Base64URLNoPadding.decode(parts[2]);
-    bool verified = hmac_verify_ex(
-        signatureBytes,
-        cast(ubyte[]) secret,
-        cast(ubyte[]) (parts[0] ~ "." ~ parts[1]),
-        HashAlgorithm.SHA2_256
-    );
-    if (!verified) {
-        throw new Exception("Verification failed!");
-        // TODO: Custom error handling.
-    }
-    return JwtClaims(claimsObj);
-}
-
-unittest {
-    JwtClaims claims;
-    claims.issuer = "example.com";
-    string token = writeJwt(claims, "test");
-    JwtClaims readClaims = readJwt(token, "test");
-    import std.stdio;
-    writeln(readClaims.toJson());
 }

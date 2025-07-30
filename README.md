@@ -1,3 +1,5 @@
-# jwt4d
+# JWT4D
 
-JSON Web Token library to generate, parse, sign, and verify JWTs.
+A JSON Web Token library to generate, parse, sign, and verify JWTs.
+
+Currently, only the "HS256" algorithm is supported.
