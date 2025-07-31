@@ -1,7 +1,7 @@
 module jwt4d.model;
 
 import std.json;
-import std.base64;
+import std.datetime;
 
 /**
  * Enum defining the names of registered JWT claims, as per RFC 7519.
@@ -95,6 +95,12 @@ struct JwtClaims {
         return this;
     }
 
+    ref expiresIn(Duration dur) {
+        long expirationUnixTime = (Clock.currTime() + dur).toUnixTime!long;
+        this.obj.object[JwtClaim.Expiration] = expirationUnixTime;
+        return this;
+    }
+
     long expiration() const {
         if (JwtClaim.Expiration !in this.obj.object) return -1;
         return this.obj.object[JwtClaim.Expiration].integer;
@@ -123,6 +129,17 @@ struct JwtClaims {
         return this;
     }
 
+    ref issuedAtNow() {
+        long now = Clock.currTime().toUnixTime!long();
+        this.obj.object[JwtClaim.IssuedAt] = now;
+        return this;
+    }
+
+    long issuedAt() const {
+        if (JwtClaim.IssuedAt !in this.obj.object) return -1;
+        return this.obj.object[JwtClaim.IssuedAt].integer;
+    }
+
     ref jwtId(string jwtId) {
         if (jwtId is null) {
             this.obj.object.remove(JwtClaim.JwtId);
@@ -130,6 +147,21 @@ struct JwtClaims {
             this.obj.object[JwtClaim.JwtId] = jwtId;
         }
         return this;
+    }
+
+    string jwtId() const {
+        if (JwtClaim.JwtId !in this.obj.object) return null;
+        return this.obj.object[JwtClaim.JwtId].str;
+    }
+
+    ref customClaim(string name, JSONValue value) {
+        this.obj.object[name] = value;
+        return this;
+    }
+
+    JSONValue customClaim(string name) const {
+        if (name !in this.obj.object) return JSONValue(null);
+        return this.obj.object[name];
     }
 
     string toJson() const {

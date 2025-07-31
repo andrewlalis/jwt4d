@@ -34,12 +34,31 @@ string writeJwt(in JwtClaims claims, string secret) {
 }
 
 unittest {
-    JwtClaims claims;
-    claims.issuer = "example.com";
-    claims.subject = "user123";
-    claims.expiration = 123;
+    JwtClaims claims = JwtClaims()
+        .issuer("example.com")
+        .subject("user123")
+        .expiration(123);
 
     string token = writeJwt(claims, "test");
     import std.stdio;
+    writeln(token);
+}
+
+// README example.
+unittest {
+    import jwt4d;
+    import std.datetime; // To set expiration in duration.
+    import std.json; // To add a custom claim value.
+    import std.stdio;
+
+    const string MY_SECRET = "this is a secret!";
+
+    JwtClaims claims = JwtClaims()
+        .issuer("my.webpage.com")
+        .subject("user123")
+        .issuedAtNow()
+        .expiresIn(minutes(30))
+        .customClaim("role", JSONValue("admin"));
+    string token = writeJwt(claims, MY_SECRET);
     writeln(token);
 }
